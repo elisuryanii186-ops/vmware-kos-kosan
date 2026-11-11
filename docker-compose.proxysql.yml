@@ -1,0 +1,84 @@
+# Docker Compose with ProxySQL
+# Website Kos-Kosan - Cloud Computing Architecture
+# This file includes ProxySQL as database proxy
+
+services:
+  # MySQL Database (Backend)
+  mysql:
+    image: mysql:8.0
+    container_name: koskosan_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: koskosan_db
+      MYSQL_USER: koskosan_user
+      MYSQL_PASSWORD: koskosan_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - koskosan_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: --default-authentication-plugin=mysql_native_password
+
+  # ProxySQL (Database Proxy)
+  proxysql:
+    image: proxysql/proxysql:2.5.5
+    container_name: koskosan_proxysql
+    restart: always
+    ports:
+      - "6032:6032"  # Admin interface
+      - "6033:6033"  # MySQL interface (application connects here)
+      - "6080:6080"  # Web interface (stats)
+    volumes:
+      - proxysql_data:/var/lib/proxysql
+      - ./proxysql/proxysql.cnf:/etc/proxysql.cnf
+      - ./proxysql/init-proxysql.sql:/docker-entrypoint-initdb.d/init-proxysql.sql
+    networks:
+      - koskosan_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-P", "6032", "-uadmin", "-padmin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Application (connects to ProxySQL)
+  web:
+    build: .
+    container_name: koskosan_web
+    restart: always
+    ports:
+      - "8080:3000"
+    environment:
+      DB_HOST: proxysql          # Connect through ProxySQL instead of direct to MySQL
+      DB_PORT: 6033              # ProxySQL MySQL interface port
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: koskosan_db
+      PORT: 3000
+      SESSION_SECRET: koskosan_secret_key_2024
+    depends_on:
+      proxysql:
+        condition: service_healthy
+    networks:
+      - koskosan_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:
+  proxysql_data:
+
+networks:
+  koskosan_network:
+    driver: bridge

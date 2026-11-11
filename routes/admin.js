@@ -3,20 +3,34 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 
-// Middleware untuk cek login
+// Middleware untuk cek login (DISABLED untuk demo)
 function isAuthenticated(req, res, next) {
+    // Auto-login untuk demo/testing
+    req.session.adminLoggedIn = true;
+    req.session.adminUsername = 'admin';
+    return next();
+    
+    /* Original code (re-enable untuk production):
     if (req.session.adminLoggedIn) {
         return next();
     }
     res.redirect('/admin/login');
+    */
 }
 
-// Login Page
+// Login Page (AUTO REDIRECT untuk demo)
 router.get('/login', (req, res) => {
+    // Auto-login dan redirect ke dashboard
+    req.session.adminLoggedIn = true;
+    req.session.adminUsername = 'admin';
+    return res.redirect('/admin/dashboard');
+    
+    /* Original code (re-enable untuk production):
     if (req.session.adminLoggedIn) {
         return res.redirect('/admin/dashboard');
     }
     res.render('admin/login', { title: 'Admin Login', error: null });
+    */
 });
 
 // Login Process
