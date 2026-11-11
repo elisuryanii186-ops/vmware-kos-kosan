@@ -1,0 +1,190 @@
+# ===============================================
+# COMMAND CHEATSHEET - Website Kos-Kosan
+# ===============================================
+
+# ===== DOCKER COMMANDS =====
+
+# Start aplikasi (first time)
+docker-compose up --build -d
+
+# Start aplikasi (subsequent runs)
+docker-compose up -d
+
+# Stop aplikasi
+docker-compose down
+
+# Stop dan hapus volume (reset database)
+docker-compose down -v
+
+# Lihat status container
+docker-compose ps
+
+# Lihat logs
+docker-compose logs -f
+docker-compose logs -f web
+docker-compose logs -f mysql
+
+# Restart container
+docker-compose restart
+docker-compose restart web
+docker-compose restart mysql
+
+# Stop satu container
+docker-compose stop web
+docker-compose stop mysql
+
+# Rebuild tanpa cache
+docker-compose build --no-cache
+docker-compose up --build -d
+
+
+# ===== DOCKER EXEC COMMANDS =====
+
+# Masuk ke web container
+docker exec -it koskosan_web sh
+
+# Masuk ke mysql container
+docker exec -it koskosan_mysql bash
+
+# MySQL CLI
+docker exec -it koskosan_mysql mysql -u root -proot koskosan_db
+
+
+# ===== DATABASE BACKUP & RESTORE =====
+
+# Backup database
+docker exec koskosan_mysql mysqldump -u root -proot koskosan_db > backup.sql
+
+# Restore database
+docker exec -i koskosan_mysql mysql -u root -proot koskosan_db < backup.sql
+
+
+# ===== DOCKER CLEANUP =====
+
+# Hapus unused images
+docker image prune -a
+
+# Hapus unused volumes
+docker volume prune
+
+# Cleanup semua
+docker system prune -a
+
+
+# ===== NPM COMMANDS (Local Development) =====
+
+# Install dependencies
+npm install
+
+# Run development mode
+npm run dev
+
+# Run production mode
+npm start
+
+
+# ===== MONITORING =====
+
+# Lihat resource usage
+docker stats
+
+# Lihat container details
+docker inspect koskosan_web
+docker inspect koskosan_mysql
+
+# Lihat networks
+docker network ls
+
+# Lihat volumes
+docker volume ls
+
+
+# ===== TROUBLESHOOTING =====
+
+# Force rebuild everything
+docker-compose down -v
+docker-compose build --no-cache
+docker-compose up -d
+
+# Lihat error logs
+docker-compose logs --tail=50 web
+docker-compose logs --tail=50 mysql
+
+# Test database connection
+docker exec koskosan_mysql mysqladmin ping -h localhost -u root -proot
+
+
+# ===== TESTING =====
+
+# Curl test homepage
+curl http://localhost:3000
+
+# Curl test API
+curl -X POST http://localhost:3000/booking -H "Content-Type: application/json" -d '{"id_kamar":1,"nama_pemesan":"Test","email":"test@email.com","no_telepon":"08123456789","tanggal_mulai":"2024-03-01","durasi_bulan":6}'
+
+
+# ===== DEPLOYMENT (Production) =====
+
+# Build for production
+docker build -t koskosan-web:1.0 .
+
+# Tag for registry
+docker tag koskosan-web:1.0 yourusername/koskosan-web:1.0
+
+# Push to Docker Hub
+docker push yourusername/koskosan-web:1.0
+
+# Pull and run on server
+docker pull yourusername/koskosan-web:1.0
+docker-compose up -d
+
+
+# ===== QUICK COMMANDS =====
+
+# One-liner start
+cd C:\Vmware_Kos-Kosan && docker-compose up -d
+
+# One-liner stop
+cd C:\Vmware_Kos-Kosan && docker-compose down
+
+# One-liner reset
+cd C:\Vmware_Kos-Kosan && docker-compose down -v && docker-compose up -d
+
+# One-liner logs
+cd C:\Vmware_Kos-Kosan && docker-compose logs -f
+
+
+# ===============================================
+# URLS
+# ===============================================
+
+# Website Publik
+http://localhost:3000
+
+# Admin Login
+http://localhost:3000/admin/login
+
+# Admin Dashboard
+http://localhost:3000/admin/dashboard
+
+# Detail Kamar (example)
+http://localhost:3000/kamar/1
+
+
+# ===============================================
+# DEFAULT CREDENTIALS
+# ===============================================
+
+# Admin Login
+Username: admin
+Password: admin123
+
+# Database
+Host: localhost (atau mysql dari container)
+Port: 3306
+User: root
+Password: root
+Database: koskosan_db
+
+
+# ===============================================

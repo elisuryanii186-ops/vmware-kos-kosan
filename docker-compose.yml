@@ -1,0 +1,54 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: koskosan_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: koskosan_db
+      MYSQL_USER: koskosan_user
+      MYSQL_PASSWORD: koskosan_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - koskosan_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Application
+  web:
+    build: .
+    container_name: koskosan_web
+    restart: always
+    ports:
+      - "8080:3000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: koskosan_db
+      PORT: 3000
+      SESSION_SECRET: koskosan_secret_key_2024
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - koskosan_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:
+
+networks:
+  koskosan_network:
+    driver: bridge

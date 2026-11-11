@@ -1,0 +1,177 @@
+<%- include('../layout/header') %>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-house-door-fill"></i> Kos-Kosan
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Beranda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/login">Login Admin</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Beranda</a></li>
+                <li class="breadcrumb-item active"><%= kamar.nama_kamar %></li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Gambar Kamar -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <img src="<%= kamar.foto_url %>" class="card-img-top" alt="<%= kamar.nama_kamar %>" style="width: 100%; height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/600x400?text=Kamar+Kos'">
+                </div>
+            </div>
+
+            <!-- Detail Kamar -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h2 class="card-title mb-0"><%= kamar.nama_kamar %></h2>
+                            <span class="badge bg-info fs-6"><%= kamar.tipe %></span>
+                        </div>
+
+                        <h3 class="text-primary mb-4">
+                            Rp <%= kamar.harga_per_bulan.toLocaleString('id-ID') %> <small class="text-muted fs-6">/bulan</small>
+                        </h3>
+
+                        <div class="mb-4">
+                            <h5><i class="bi bi-card-checklist"></i> Fasilitas</h5>
+                            <p class="text-muted"><%= kamar.fasilitas %></p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5><i class="bi bi-info-circle"></i> Status Ketersediaan</h5>
+                            <% if (kamar.status === 'Tersedia') { %>
+                                <span class="badge badge-status bg-success fs-6"><i class="bi bi-check-circle"></i> Tersedia</span>
+                            <% } else if (kamar.status === 'Terisi') { %>
+                                <span class="badge badge-status bg-danger fs-6"><i class="bi bi-x-circle"></i> Terisi</span>
+                            <% } else { %>
+                                <span class="badge badge-status bg-warning text-dark fs-6"><i class="bi bi-tools"></i> Maintenance</span>
+                            <% } %>
+                        </div>
+
+                        <% if (kamar.status === 'Tersedia') { %>
+                            <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                                <i class="bi bi-calendar-check"></i> Pesan Sekarang
+                            </button>
+                        <% } else { %>
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                <i class="bi bi-x-circle"></i> Tidak Tersedia
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Form Booking -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-calendar-check"></i> Form Pemesanan Kamar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bookingForm">
+                    <input type="hidden" name="id_kamar" value="<%= kamar.id %>">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="nama_pemesan" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">No. Telepon <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" name="no_telepon" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="tanggal_mulai" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Durasi (bulan) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="durasi_bulan" min="1" max="12" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Catatan Tambahan</label>
+                        <textarea class="form-control" name="catatan" rows="3" placeholder="Contoh: Butuh tempat parkir motor"></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Pemesanan akan dikonfirmasi oleh admin dalam 1x24 jam
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="submitBooking()">
+                    <i class="bi bi-send"></i> Kirim Pemesanan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function submitBooking() {
+    const form = document.getElementById('bookingForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+            form.reset();
+            
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+</script>
+
+<%- include('../layout/footer') %>

@@ -1,0 +1,409 @@
+<%- include('../layout/header') %>
+
+<!-- Navbar Admin -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/admin/dashboard">
+            <i class="bi bi-speedometer2"></i> Admin Dashboard
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Lihat Website</a>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-link"><i class="bi bi-person-circle"></i> <%= username %></span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container-fluid">
+        <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard Admin</h2>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-door-open"></i> Total Kamar</h5>
+                        <h2 class="mb-0"><%= kamarList.length %></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-check-circle"></i> Kamar Tersedia</h5>
+                        <h2 class="mb-0"><%= kamarList.filter(k => k.status === 'Tersedia').length %></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-clock-history"></i> Pemesanan Pending</h5>
+                        <h2 class="mb-0"><%= pemesananList.filter(p => p.status === 'Pending').length %></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manajemen Kamar -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Manajemen Kamar</h5>
+                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addKamarModal">
+                    <i class="bi bi-plus-circle"></i> Tambah Kamar
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Kamar</th>
+                                <th>Tipe</th>
+                                <th>Harga/Bulan</th>
+                                <th>Fasilitas</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% kamarList.forEach(kamar => { %>
+                                <tr>
+                                    <td><%= kamar.id %></td>
+                                    <td><%= kamar.nama_kamar %></td>
+                                    <td><span class="badge bg-info"><%= kamar.tipe %></span></td>
+                                    <td>Rp <%= kamar.harga_per_bulan.toLocaleString('id-ID') %></td>
+                                    <td><small><%= kamar.fasilitas.substring(0, 30) %>...</small></td>
+                                    <td>
+                                        <% if (kamar.status === 'Tersedia') { %>
+                                            <span class="badge bg-success"><%= kamar.status %></span>
+                                        <% } else if (kamar.status === 'Terisi') { %>
+                                            <span class="badge bg-danger"><%= kamar.status %></span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning"><%= kamar.status %></span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="editKamar(<%= JSON.stringify(kamar) %>)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteKamar(<%= kamar.id %>)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daftar Pemesanan -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Daftar Pemesanan</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Kamar</th>
+                                <th>Nama Pemesan</th>
+                                <th>Kontak</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Durasi</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% pemesananList.forEach(pemesanan => { %>
+                                <tr>
+                                    <td><%= pemesanan.id %></td>
+                                    <td><%= pemesanan.nama_kamar %> (<%= pemesanan.tipe %>)</td>
+                                    <td><%= pemesanan.nama_pemesan %></td>
+                                    <td>
+                                        <small>
+                                            <%= pemesanan.email %><br>
+                                            <%= pemesanan.no_telepon %>
+                                        </small>
+                                    </td>
+                                    <td><%= new Date(pemesanan.tanggal_mulai).toLocaleDateString('id-ID') %></td>
+                                    <td><%= pemesanan.durasi_bulan %> bulan</td>
+                                    <td>
+                                        <% if (pemesanan.status === 'Pending') { %>
+                                            <span class="badge bg-warning"><%= pemesanan.status %></span>
+                                        <% } else if (pemesanan.status === 'Disetujui') { %>
+                                            <span class="badge bg-success"><%= pemesanan.status %></span>
+                                        <% } else { %>
+                                            <span class="badge bg-danger"><%= pemesanan.status %></span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (pemesanan.status === 'Pending') { %>
+                                            <button class="btn btn-sm btn-success" onclick="updatePemesananStatus(<%= pemesanan.id %>, 'Disetujui')">
+                                                <i class="bi bi-check"></i> Setujui
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="updatePemesananStatus(<%= pemesanan.id %>, 'Ditolak')">
+                                                <i class="bi bi-x"></i> Tolak
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-danger" onclick="deletePemesanan(<%= pemesanan.id %>)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Kamar -->
+<div class="modal fade" id="addKamarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Kamar Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addKamarForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Kamar</label>
+                        <input type="text" class="form-control" name="nama_kamar" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipe</label>
+                        <select class="form-select" name="tipe" required>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="VIP">VIP</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Harga per Bulan (Rp)</label>
+                        <input type="number" class="form-control" name="harga_per_bulan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fasilitas</label>
+                        <textarea class="form-control" name="fasilitas" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Terisi">Terisi</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddKamar()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Kamar -->
+<div class="modal fade" id="editKamarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Kamar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editKamarForm">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Kamar</label>
+                        <input type="text" class="form-control" name="nama_kamar" id="edit_nama_kamar" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipe</label>
+                        <select class="form-select" name="tipe" id="edit_tipe" required>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="VIP">VIP</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Harga per Bulan (Rp)</label>
+                        <input type="number" class="form-control" name="harga_per_bulan" id="edit_harga_per_bulan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fasilitas</label>
+                        <textarea class="form-control" name="fasilitas" id="edit_fasilitas" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" id="edit_status" required>
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Terisi">Terisi</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditKamar()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function submitAddKamar() {
+    const form = document.getElementById('addKamarForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/admin/kamar/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('addKamarModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+
+function editKamar(kamar) {
+    document.getElementById('edit_id').value = kamar.id;
+    document.getElementById('edit_nama_kamar').value = kamar.nama_kamar;
+    document.getElementById('edit_tipe').value = kamar.tipe;
+    document.getElementById('edit_harga_per_bulan').value = kamar.harga_per_bulan;
+    document.getElementById('edit_fasilitas').value = kamar.fasilitas;
+    document.getElementById('edit_status').value = kamar.status;
+    
+    new bootstrap.Modal(document.getElementById('editKamarModal')).show();
+}
+
+async function submitEditKamar() {
+    const form = document.getElementById('editKamarForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    const id = data.id;
+    delete data.id;
+    
+    try {
+        const response = await fetch(`/admin/kamar/update/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editKamarModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+
+async function deleteKamar(id) {
+    if (!confirm('Yakin ingin menghapus kamar ini?')) return;
+    
+    try {
+        const response = await fetch(`/admin/kamar/delete/${id}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+
+async function updatePemesananStatus(id, status) {
+    try {
+        const response = await fetch(`/admin/pemesanan/status/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+
+async function deletePemesanan(id) {
+    if (!confirm('Yakin ingin menghapus pemesanan ini?')) return;
+    
+    try {
+        const response = await fetch(`/admin/pemesanan/delete/${id}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'danger');
+        }
+    } catch (error) {
+        showToast('Terjadi kesalahan koneksi', 'danger');
+    }
+}
+</script>
+
+<%- include('../layout/footer') %>

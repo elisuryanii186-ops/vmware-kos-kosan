@@ -1,0 +1,122 @@
+<%- include('../layout/header') %>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-house-door-fill"></i> Kos-Kosan
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Beranda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/login">Login Admin</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">Temukan Kamar Kos Impian Anda</h1>
+            <p class="lead text-muted">Berbagai pilihan kamar kos dengan fasilitas lengkap dan harga terjangkau</p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="/" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-search"></i> Cari Kamar</label>
+                        <input type="text" class="form-control" name="search" placeholder="Nama kamar atau fasilitas..." value="<%= filter.search %>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-tag"></i> Tipe Kamar</label>
+                        <select class="form-select" name="tipe">
+                            <option value="Semua" <%= filter.tipe === 'Semua' ? 'selected' : '' %>>Semua Tipe</option>
+                            <option value="Single" <%= filter.tipe === 'Single' ? 'selected' : '' %>>Single</option>
+                            <option value="Double" <%= filter.tipe === 'Double' ? 'selected' : '' %>>Double</option>
+                            <option value="VIP" <%= filter.tipe === 'VIP' ? 'selected' : '' %>>VIP</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-info-circle"></i> Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Semua" <%= filter.status === 'Semua' ? 'selected' : '' %>>Semua Status</option>
+                            <option value="Tersedia" <%= filter.status === 'Tersedia' ? 'selected' : '' %>>Tersedia</option>
+                            <option value="Terisi" <%= filter.status === 'Terisi' ? 'selected' : '' %>>Terisi</option>
+                            <option value="Maintenance" <%= filter.status === 'Maintenance' ? 'selected' : '' %>>Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Daftar Kamar -->
+        <div class="row">
+            <% if (kamarList.length === 0) { %>
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
+                        <h5>Tidak ada kamar yang ditemukan</h5>
+                        <p class="mb-0">Coba ubah filter pencarian Anda</p>
+                    </div>
+                </div>
+            <% } else { %>
+                <% kamarList.forEach(kamar => { %>
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <img src="<%= kamar.foto_url %>" class="card-img-top" alt="<%= kamar.nama_kamar %>" style="height: 200px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x300?text=Kamar+Kos'">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0"><%= kamar.nama_kamar %></h5>
+                                    <span class="badge bg-info"><%= kamar.tipe %></span>
+                                </div>
+                                
+                                <h4 class="text-primary mb-3">
+                                    Rp <%= kamar.harga_per_bulan.toLocaleString('id-ID') %> <small class="text-muted fs-6">/bulan</small>
+                                </h4>
+                                
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-card-list"></i> <%= kamar.fasilitas %>
+                                </p>
+                                
+                                <div class="mb-3">
+                                    <% if (kamar.status === 'Tersedia') { %>
+                                        <span class="badge badge-status bg-success"><i class="bi bi-check-circle"></i> Tersedia</span>
+                                    <% } else if (kamar.status === 'Terisi') { %>
+                                        <span class="badge badge-status bg-danger"><i class="bi bi-x-circle"></i> Terisi</span>
+                                    <% } else { %>
+                                        <span class="badge badge-status bg-warning text-dark"><i class="bi bi-tools"></i> Maintenance</span>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <a href="/kamar/<%= kamar.id %>" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Lihat Detail
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('../layout/footer') %>
